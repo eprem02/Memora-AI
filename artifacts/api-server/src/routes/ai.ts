@@ -48,6 +48,28 @@ router.get("/ai/conversations/:id", requireAuth, async (req, res): Promise<void>
   });
 });
 
+router.post("/ai/tts", requireAuth, async (req, res): Promise<void> => {
+  const { text, voice = "nova" } = req.body;
+  if (!text || typeof text !== "string") {
+    res.status(400).json({ error: "text is required" });
+    return;
+  }
+  try {
+    const mp3 = await openai.audio.speech.create({
+      model: "tts-1",
+      voice: voice as "nova" | "alloy" | "echo" | "fable" | "onyx" | "shimmer",
+      input: text.slice(0, 4096),
+    });
+    const buffer = Buffer.from(await mp3.arrayBuffer());
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Content-Length", buffer.length);
+    res.send(buffer);
+  } catch (err) {
+    logger.error({ err }, "TTS error");
+    res.status(500).json({ error: "TTS failed" });
+  }
+});
+
 router.delete("/ai/conversations/:id", requireAuth, async (req, res): Promise<void> => {
   const user = (req as typeof req & { user: AuthPayload }).user;
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
