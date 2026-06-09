@@ -2,10 +2,12 @@ import { Router, type IRouter } from "express";
 import { eq, and, asc, desc } from "drizzle-orm";
 import { db, conversationsTable, messagesTable } from "@workspace/db";
 import { requireAuth, type AuthPayload } from "../middlewares/auth";
-import { openai } from "@workspace/integrations-openai-ai-server";
+import { GoogleGenAI } from "@google/genai";
 import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
+
+const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY ?? "" });
 
 const SYSTEM_PROMPT = `You are Memora, a warm, intelligent AI companion embedded in the user's personal second-brain app. You have access to the context of being their personal memory assistant — helping them think through ideas, reflect on their day, organize thoughts, and provide thoughtful conversation. Be concise but thoughtful. Never use emojis. Be direct and human.`;
 
@@ -48,28 +50,6 @@ router.get("/ai/conversations/:id", requireAuth, async (req, res): Promise<void>
   });
 });
 
-router.post("/ai/tts", requireAuth, async (req, res): Promise<void> => {
-  const { text, voice = "nova" } = req.body;
-  if (!text || typeof text !== "string") {
-    res.status(400).json({ error: "text is required" });
-    return;
-  }
-  try {
-    const mp3 = await openai.audio.speech.create({
-      model: "tts-1",
-      voice: voice as "nova" | "alloy" | "echo" | "fable" | "onyx" | "shimmer",
-      input: text.slice(0, 4096),
-    });
-    const buffer = Buffer.from(await mp3.arrayBuffer());
-    res.setHeader("Content-Type", "audio/mpeg");
-    res.setHeader("Content-Length", buffer.length);
-    res.send(buffer);
-  } catch (err) {
-    logger.error({ err }, "TTS error");
-    res.status(500).json({ error: "TTS failed" });
-  }
-});
-
 router.delete("/ai/conversations/:id", requireAuth, async (req, res): Promise<void> => {
   const user = (req as typeof req & { user: AuthPayload }).user;
   const raw = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
@@ -104,11 +84,6 @@ router.post("/ai/conversations/:id/messages", requireAuth, async (req, res): Pro
     .where(eq(messagesTable.conversationId, id))
     .orderBy(asc(messagesTable.createdAt));
 
-  const chatMessages = [
-    { role: "system" as const, content: SYSTEM_PROMPT },
-    ...history.map(m => ({ role: m.role as "user" | "assistant", content: m.content })),
-  ];
-
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
@@ -116,18 +91,22 @@ router.post("/ai/conversations/:id/messages", requireAuth, async (req, res): Pro
   let fullResponse = "";
 
   try {
-    const stream = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      max_completion_tokens: 8192,
-      messages: chatMessages,
-      stream: true,
+    const contents = history.map(m => ({
+      role: m.role === "assistant" ? "model" as const : "user" as const,
+      parts: [{ text: m.content }],
+    }));
+
+    const stream = await genai.models.generateContentStream({
+      model: "gemini-2.5-flash",
+      contents,
+      config: { systemInstruction: SYSTEM_PROMPT },
     });
 
     for await (const chunk of stream) {
-      const delta = chunk.choices[0]?.delta?.content;
-      if (delta) {
-        fullResponse += delta;
-        res.write(`data: ${JSON.stringify({ content: delta })}\n\n`);
+      const text = chunk.text;
+      if (text) {
+        fullResponse += text;
+        res.write(`data: ${JSON.stringify({ content: text })}\n\n`);
       }
     }
 
@@ -140,7 +119,7 @@ router.post("/ai/conversations/:id/messages", requireAuth, async (req, res): Pro
 
     res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
   } catch (err) {
-    logger.error({ err }, "AI stream error");
+    logger.error({ err }, "Gemini stream error");
     res.write(`data: ${JSON.stringify({ error: "AI error" })}\n\n`);
   }
 

@@ -40,21 +40,19 @@ const SpeechRec =
     ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null;
 
-// ─── TTS helper ──────────────────────────────────────────────────────────────
-async function speakText(text: string): Promise<HTMLAudioElement> {
-  const token = localStorage.getItem("memora_token");
-  const res = await fetch("/api/ai/tts", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-    body: JSON.stringify({ text }),
-  });
-  if (!res.ok) throw new Error("TTS failed");
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.onended = () => URL.revokeObjectURL(url);
-  audio.play();
-  return audio;
+// ─── TTS helper (browser speechSynthesis) ────────────────────────────────────
+function speakText(text: string): SpeechSynthesisUtterance {
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 1.0;
+  utterance.pitch = 1.0;
+  utterance.volume = 1.0;
+  // prefer a natural-sounding voice if available
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(v => /natural|enhanced|google/i.test(v.name)) ?? voices[0];
+  if (preferred) utterance.voice = preferred;
+  window.speechSynthesis.speak(utterance);
+  return utterance;
 }
 
 export default function AiCompanion() {
@@ -66,7 +64,6 @@ export default function AiCompanion() {
   const [isListening, setIsListening] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(false);
   const [playingMsgId, setPlayingMsgId] = useState<number | null>(null);
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
 
   const { data: conversations } = useListAiConversations();
   const createConv = useCreateAiConversation();
@@ -93,7 +90,7 @@ export default function AiCompanion() {
     if (!isStreaming && prevDraftRef.current) {
       const text = prevDraftRef.current;
       prevDraftRef.current = "";
-      speakText(text).catch(() => {});
+      speakText(text);
     }
     if (assistantDraft) prevDraftRef.current = assistantDraft;
   }, [isStreaming, assistantDraft, autoSpeak]);
@@ -218,25 +215,17 @@ export default function AiCompanion() {
   }, [isListening]);
 
   // ── TTS per message ─────────────────────────────────────────────────────────
-  const handleSpeak = async (msgId: number, text: string) => {
+  const handleSpeak = (msgId: number, text: string) => {
     if (playingMsgId === msgId) {
-      currentAudio?.pause();
+      window.speechSynthesis.cancel();
       setPlayingMsgId(null);
-      setCurrentAudio(null);
       return;
     }
-    currentAudio?.pause();
+    window.speechSynthesis.cancel();
     setPlayingMsgId(msgId);
-    try {
-      const audio = await speakText(text);
-      setCurrentAudio(audio);
-      audio.onended = () => {
-        setPlayingMsgId(null);
-        setCurrentAudio(null);
-      };
-    } catch {
-      setPlayingMsgId(null);
-    }
+    const utterance = speakText(text);
+    utterance.onend = () => setPlayingMsgId(null);
+    utterance.onerror = () => setPlayingMsgId(null);
   };
 
   const hasSpeechSupport = !!SpeechRec;
@@ -251,7 +240,7 @@ export default function AiCompanion() {
           </div>
           <div>
             <h1 className="text-xl font-bold tracking-tight">AI Companion</h1>
-            <p className="text-xs text-muted-foreground font-mono">Powered by GPT-4o mini</p>
+            <p className="text-xs text-muted-foreground font-mono">Powered by Gemini 2.5 Flash</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
