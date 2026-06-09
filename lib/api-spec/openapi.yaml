@@ -21,6 +21,16 @@ tags:
     description: User profile
   - name: dashboard
     description: Dashboard summary
+  - name: ai
+    description: AI Companion chat
+  - name: photos
+    description: Photo management
+  - name: medications
+    description: Medication tracking
+  - name: sos
+    description: Emergency SOS contacts
+  - name: Storage
+    description: Object storage upload and serving endpoints.
 paths:
   /healthz:
     get:
@@ -453,6 +463,360 @@ paths:
         "204":
           description: Deleted
 
+  /storage/uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestUploadUrl
+      summary: Request a presigned URL for file upload
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadUrlRequest"
+      responses:
+        "200":
+          description: Presigned upload URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadUrlResponse"
+
+  /storage/objects/{objectPath}:
+    get:
+      tags: [Storage]
+      operationId: getStorageObject
+      summary: Serve an uploaded object
+      parameters:
+        - name: objectPath
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Object content
+          content:
+            "*/*":
+              schema:
+                type: string
+                format: binary
+
+  /photos:
+    get:
+      operationId: listPhotos
+      tags: [photos]
+      summary: List all photos
+      responses:
+        "200":
+          description: Photos list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Photo"
+    post:
+      operationId: createPhoto
+      tags: [photos]
+      summary: Create a photo entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+
+  /photos/{id}:
+    patch:
+      operationId: updatePhoto
+      tags: [photos]
+      summary: Update a photo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Photo"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deletePhoto
+      tags: [photos]
+      summary: Delete a photo
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /medications:
+    get:
+      operationId: listMedications
+      tags: [medications]
+      summary: List all medications
+      responses:
+        "200":
+          description: Medications list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Medication"
+    post:
+      operationId: createMedication
+      tags: [medications]
+      summary: Create a medication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicationInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+
+  /medications/{id}:
+    patch:
+      operationId: updateMedication
+      tags: [medications]
+      summary: Update a medication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicationUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medication"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteMedication
+      tags: [medications]
+      summary: Delete a medication
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /sos-contacts:
+    get:
+      operationId: listSosContacts
+      tags: [sos]
+      summary: List SOS contacts
+      responses:
+        "200":
+          description: SOS contacts list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SosContact"
+    post:
+      operationId: createSosContact
+      tags: [sos]
+      summary: Create an SOS contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SosContactInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosContact"
+
+  /sos-contacts/{id}:
+    patch:
+      operationId: updateSosContact
+      tags: [sos]
+      summary: Update an SOS contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SosContactUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SosContact"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteSosContact
+      tags: [sos]
+      summary: Delete an SOS contact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ai/conversations:
+    get:
+      operationId: listAiConversations
+      tags: [ai]
+      summary: List AI conversations
+      responses:
+        "200":
+          description: Conversations list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AiConversationSummary"
+    post:
+      operationId: createAiConversation
+      tags: [ai]
+      summary: Create a new AI conversation
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiConversationSummary"
+
+  /ai/conversations/{id}:
+    get:
+      operationId: getAiConversation
+      tags: [ai]
+      summary: Get a conversation with messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiConversation"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      operationId: deleteAiConversation
+      tags: [ai]
+      summary: Delete a conversation
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /ai/conversations/{id}/messages:
+    post:
+      operationId: sendAiMessage
+      tags: [ai]
+      summary: Send a message and get a streaming AI response
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiMessageInput"
+      responses:
+        "200":
+          description: SSE stream
+          content:
+            text/event-stream: {}
+
   /profile:
     get:
       operationId: getProfile
@@ -784,4 +1148,236 @@ components:
         bio:
           type: string
         avatarInitials:
+          type: string
+
+    Photo:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        caption:
+          type: ["string", "null"]
+        objectPath:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, title, objectPath, createdAt, updatedAt]
+
+    PhotoInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        caption:
+          type: string
+        objectPath:
+          type: string
+          minLength: 1
+      required: [title, objectPath]
+
+    PhotoUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        caption:
+          type: string
+
+    Medication:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        instructions:
+          type: ["string", "null"]
+        startDate:
+          type: ["string", "null"]
+        endDate:
+          type: ["string", "null"]
+        isActive:
+          type: boolean
+        color:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, name, dosage, frequency, isActive, color, createdAt, updatedAt]
+
+    MedicationInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        dosage:
+          type: string
+          minLength: 1
+        frequency:
+          type: string
+          minLength: 1
+        instructions:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        isActive:
+          type: boolean
+        color:
+          type: string
+      required: [name, dosage, frequency]
+
+    MedicationUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        dosage:
+          type: string
+        frequency:
+          type: string
+        instructions:
+          type: string
+        startDate:
+          type: string
+        endDate:
+          type: string
+        isActive:
+          type: boolean
+        color:
+          type: string
+
+    SosContact:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        name:
+          type: string
+        phone:
+          type: string
+        relationship:
+          type: string
+        notes:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required: [id, userId, name, phone, relationship, createdAt, updatedAt]
+
+    SosContactInput:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+        relationship:
+          type: string
+          minLength: 1
+        notes:
+          type: string
+      required: [name, phone, relationship]
+
+    SosContactUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+        relationship:
+          type: string
+        notes:
+          type: string
+
+    AiMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+        content:
+          type: string
+        createdAt:
+          type: string
+      required: [id, role, content, createdAt]
+
+    AiConversation:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/AiMessage"
+      required: [id, title, createdAt, messages]
+
+    AiConversationSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        createdAt:
+          type: string
+      required: [id, title, createdAt]
+
+    AiMessageInput:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+      required: [content]
+
+    UploadUrlRequest:
+      type: object
+      required: [name, size, contentType]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        size:
+          type: integer
+          minimum: 1
+        contentType:
+          type: string
+          minLength: 1
+
+    UploadUrlResponse:
+      type: object
+      required: [uploadURL, objectPath]
+      properties:
+        uploadURL:
+          type: string
+        objectPath:
           type: string

@@ -1,0 +1,3 @@
+- [MemoraAI DB schema quirks](memoraai-db-quirks.md) — conversations table needs userId; template names differ from project names
+- [MemoraAI icon pitfall](memoraai-icons.md) — MessageSquareTerminal doesn't exist in installed lucide-react; use Bot
+- [MemoraAI object storage cast](memoraai-storage.md) — objectStorage.ts response.json() needs explicit cast to avoid TS18048

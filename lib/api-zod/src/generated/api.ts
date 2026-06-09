@@ -362,6 +362,296 @@ export const DeleteMemoryParams = zod.object({
 
 
 /**
+ * @summary Request a presigned URL for file upload
+ */
+
+
+
+
+
+export const RequestUploadUrlBody = zod.object({
+  "name": zod.string().min(1),
+  "size": zod.number().min(1),
+  "contentType": zod.string().min(1)
+})
+
+export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "objectPath": zod.string()
+})
+
+
+/**
+ * @summary Serve an uploaded object
+ */
+export const GetStorageObjectParams = zod.object({
+  "objectPath": zod.coerce.string()
+})
+
+
+/**
+ * @summary List all photos
+ */
+export const ListPhotosResponseItem = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "title": zod.string(),
+  "caption": zod.string().nullish(),
+  "objectPath": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListPhotosResponse = zod.array(ListPhotosResponseItem)
+
+
+/**
+ * @summary Create a photo entry
+ */
+
+
+
+
+export const CreatePhotoBody = zod.object({
+  "title": zod.string().min(1),
+  "caption": zod.string().optional(),
+  "objectPath": zod.string().min(1)
+})
+
+
+/**
+ * @summary Update a photo
+ */
+export const UpdatePhotoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdatePhotoBody = zod.object({
+  "title": zod.string().optional(),
+  "caption": zod.string().optional()
+})
+
+export const UpdatePhotoResponse = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "title": zod.string(),
+  "caption": zod.string().nullish(),
+  "objectPath": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a photo
+ */
+export const DeletePhotoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List all medications
+ */
+export const ListMedicationsResponseItem = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "dosage": zod.string(),
+  "frequency": zod.string(),
+  "instructions": zod.string().nullish(),
+  "startDate": zod.string().nullish(),
+  "endDate": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "color": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListMedicationsResponse = zod.array(ListMedicationsResponseItem)
+
+
+/**
+ * @summary Create a medication
+ */
+
+
+
+
+
+export const CreateMedicationBody = zod.object({
+  "name": zod.string().min(1),
+  "dosage": zod.string().min(1),
+  "frequency": zod.string().min(1),
+  "instructions": zod.string().optional(),
+  "startDate": zod.string().optional(),
+  "endDate": zod.string().optional(),
+  "isActive": zod.boolean().optional(),
+  "color": zod.string().optional()
+})
+
+
+/**
+ * @summary Update a medication
+ */
+export const UpdateMedicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateMedicationBody = zod.object({
+  "name": zod.string().optional(),
+  "dosage": zod.string().optional(),
+  "frequency": zod.string().optional(),
+  "instructions": zod.string().optional(),
+  "startDate": zod.string().optional(),
+  "endDate": zod.string().optional(),
+  "isActive": zod.boolean().optional(),
+  "color": zod.string().optional()
+})
+
+export const UpdateMedicationResponse = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "dosage": zod.string(),
+  "frequency": zod.string(),
+  "instructions": zod.string().nullish(),
+  "startDate": zod.string().nullish(),
+  "endDate": zod.string().nullish(),
+  "isActive": zod.boolean(),
+  "color": zod.string(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a medication
+ */
+export const DeleteMedicationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List SOS contacts
+ */
+export const ListSosContactsResponseItem = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "relationship": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+export const ListSosContactsResponse = zod.array(ListSosContactsResponseItem)
+
+
+/**
+ * @summary Create an SOS contact
+ */
+
+
+
+
+
+export const CreateSosContactBody = zod.object({
+  "name": zod.string().min(1),
+  "phone": zod.string().min(1),
+  "relationship": zod.string().min(1),
+  "notes": zod.string().optional()
+})
+
+
+/**
+ * @summary Update an SOS contact
+ */
+export const UpdateSosContactParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateSosContactBody = zod.object({
+  "name": zod.string().optional(),
+  "phone": zod.string().optional(),
+  "relationship": zod.string().optional(),
+  "notes": zod.string().optional()
+})
+
+export const UpdateSosContactResponse = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "phone": zod.string(),
+  "relationship": zod.string(),
+  "notes": zod.string().nullish(),
+  "createdAt": zod.string(),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete an SOS contact
+ */
+export const DeleteSosContactParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary List AI conversations
+ */
+export const ListAiConversationsResponseItem = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "createdAt": zod.string()
+})
+export const ListAiConversationsResponse = zod.array(ListAiConversationsResponseItem)
+
+
+/**
+ * @summary Get a conversation with messages
+ */
+export const GetAiConversationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetAiConversationResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "createdAt": zod.string(),
+  "messages": zod.array(zod.object({
+  "id": zod.number(),
+  "role": zod.string(),
+  "content": zod.string(),
+  "createdAt": zod.string()
+}))
+})
+
+
+/**
+ * @summary Delete a conversation
+ */
+export const DeleteAiConversationParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Send a message and get a streaming AI response
+ */
+export const SendAiMessageParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const SendAiMessageBody = zod.object({
+  "content": zod.string().min(1)
+})
+
+
+/**
  * @summary Get current user profile
  */
 export const GetProfileResponse = zod.object({

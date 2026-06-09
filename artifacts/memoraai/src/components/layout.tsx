@@ -7,7 +7,11 @@ import {
   BrainCircuit, 
   UserCircle, 
   LogOut,
-  Menu
+  Menu,
+  Bot,
+  Image as ImageIcon,
+  Pill,
+  AlertOctagon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -15,9 +19,13 @@ import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/ai", label: "AI Companion", icon: Bot },
   { href: "/notes", label: "Notes", icon: BookOpen },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
   { href: "/memories", label: "Memories", icon: BrainCircuit },
+  { href: "/photos", label: "Photos", icon: ImageIcon },
+  { href: "/medications", label: "Medications", icon: Pill },
+  { href: "/sos", label: "Emergency SOS", icon: AlertOctagon },
   { href: "/profile", label: "Profile", icon: UserCircle },
 ];
 

@@ -166,6 +166,141 @@ export interface ProfileUpdate {
   avatarInitials?: string;
 }
 
+export interface Photo {
+  id: number;
+  userId: number;
+  title: string;
+  /** @nullable */
+  caption?: string | null;
+  objectPath: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PhotoInput {
+  /** @minLength 1 */
+  title: string;
+  caption?: string;
+  /** @minLength 1 */
+  objectPath: string;
+}
+
+export interface PhotoUpdate {
+  title?: string;
+  caption?: string;
+}
+
+export interface Medication {
+  id: number;
+  userId: number;
+  name: string;
+  dosage: string;
+  frequency: string;
+  /** @nullable */
+  instructions?: string | null;
+  /** @nullable */
+  startDate?: string | null;
+  /** @nullable */
+  endDate?: string | null;
+  isActive: boolean;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MedicationInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  dosage: string;
+  /** @minLength 1 */
+  frequency: string;
+  instructions?: string;
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  color?: string;
+}
+
+export interface MedicationUpdate {
+  name?: string;
+  dosage?: string;
+  frequency?: string;
+  instructions?: string;
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  color?: string;
+}
+
+export interface SosContact {
+  id: number;
+  userId: number;
+  name: string;
+  phone: string;
+  relationship: string;
+  /** @nullable */
+  notes?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SosContactInput {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  phone: string;
+  /** @minLength 1 */
+  relationship: string;
+  notes?: string;
+}
+
+export interface SosContactUpdate {
+  name?: string;
+  phone?: string;
+  relationship?: string;
+  notes?: string;
+}
+
+export interface AiMessage {
+  id: number;
+  role: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface AiConversation {
+  id: number;
+  title: string;
+  createdAt: string;
+  messages: AiMessage[];
+}
+
+export interface AiConversationSummary {
+  id: number;
+  title: string;
+  createdAt: string;
+}
+
+export interface AiMessageInput {
+  /** @minLength 1 */
+  content: string;
+}
+
+export interface UploadUrlRequest {
+  /** @minLength 1 */
+  name: string;
+  /** @minimum 1 */
+  size: number;
+  /** @minLength 1 */
+  contentType: string;
+}
+
+export interface UploadUrlResponse {
+  uploadURL: string;
+  objectPath: string;
+}
+
 export type ListNotesParams = {
 search?: string;
 };

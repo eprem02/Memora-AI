@@ -6,6 +6,11 @@ import tasksRouter from "./tasks";
 import memoriesRouter from "./memories";
 import dashboardRouter from "./dashboard";
 import profileRouter from "./profile";
+import photosRouter from "./photos";
+import medicationsRouter from "./medications";
+import sosRouter from "./sos";
+import aiRouter from "./ai";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -16,5 +21,10 @@ router.use(tasksRouter);
 router.use(memoriesRouter);
 router.use(dashboardRouter);
 router.use(profileRouter);
+router.use(photosRouter);
+router.use(medicationsRouter);
+router.use(sosRouter);
+router.use(aiRouter);
+router.use(storageRouter);
 
 export default router;

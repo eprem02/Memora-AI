@@ -6,6 +6,10 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './aiConversation';
+export * from './aiConversationSummary';
+export * from './aiMessage';
+export * from './aiMessageInput';
 export * from './authInput';
 export * from './authResponse';
 export * from './dashboardSummary';
@@ -15,18 +19,29 @@ export * from './listMemoriesParams';
 export * from './listNotesParams';
 export * from './listTasksParams';
 export * from './listTasksStatus';
+export * from './medication';
+export * from './medicationInput';
+export * from './medicationUpdate';
 export * from './memory';
 export * from './memoryInput';
 export * from './memoryUpdate';
 export * from './note';
 export * from './noteInput';
 export * from './noteUpdate';
+export * from './photo';
+export * from './photoInput';
+export * from './photoUpdate';
 export * from './profile';
 export * from './profileUpdate';
+export * from './sosContact';
+export * from './sosContactInput';
+export * from './sosContactUpdate';
 export * from './task';
 export * from './taskInput';
 export * from './taskInputPriority';
 export * from './taskPriority';
 export * from './taskUpdate';
 export * from './taskUpdatePriority';
+export * from './uploadUrlRequest';
+export * from './uploadUrlResponse';
 export * from './user';

@@ -14,6 +14,10 @@ import Notes from "@/pages/notes";
 import Tasks from "@/pages/tasks";
 import Memories from "@/pages/memories";
 import Profile from "@/pages/profile";
+import AiCompanion from "@/pages/ai";
+import Photos from "@/pages/photos";
+import Medications from "@/pages/medications";
+import SOS from "@/pages/sos";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +30,10 @@ function ProtectedRoutes() {
           <Route path="/notes" component={Notes} />
           <Route path="/tasks" component={Tasks} />
           <Route path="/memories" component={Memories} />
+          <Route path="/ai" component={AiCompanion} />
+          <Route path="/photos" component={Photos} />
+          <Route path="/medications" component={Medications} />
+          <Route path="/sos" component={SOS} />
           <Route path="/profile" component={Profile} />
           <Route path="/" component={Dashboard} />
           <Route component={NotFound} />

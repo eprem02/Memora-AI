@@ -2,3 +2,8 @@ export * from "./users";
 export * from "./notes";
 export * from "./tasks";
 export * from "./memories";
+export * from "./photos";
+export * from "./medications";
+export * from "./sos_contacts";
+export * from "./conversations";
+export * from "./messages";
