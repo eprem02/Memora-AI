@@ -393,9 +393,21 @@ router.post(
       extractAndStoreMemories(user.userId, content, fullResponse).catch((err) =>
         logger.error({ err }, "Memory extraction error"),
       );
-    } catch (err) {
+    } catch (err: any) {
       logger.error({ err }, "Gemini stream error");
-      res.write(`data: ${JSON.stringify({ error: "AI error" })}\n\n`);
+      // Surface rate-limit errors as in-chat messages so the user understands
+      const msg = err?.message ?? "";
+      const is429 = err?.status === 429 || msg.includes("429") || msg.includes("RESOURCE_EXHAUSTED") || msg.includes("quota");
+      const friendlyText = is429
+        ? "I've hit the Gemini API rate limit for now. Please wait a minute and try again, or reduce the frequency of requests."
+        : "Something went wrong on my end. Please try again.";
+      if (!fullResponse) {
+        // Nothing streamed yet — send as a content chunk so it appears as a message
+        res.write(`data: ${JSON.stringify({ content: friendlyText })}\n\n`);
+        fullResponse = friendlyText;
+        await db.insert(messagesTable).values({ conversationId: id, role: "assistant", content: fullResponse });
+      }
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
     }
 
     res.end();
@@ -418,7 +430,7 @@ If there are no memorable facts, respond with exactly: NONE
 Otherwise respond with one fact per line, plain text, no bullet points, no numbering. Maximum 3 facts.`;
 
   const response = await genai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-2.0-flash",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
   });
 
