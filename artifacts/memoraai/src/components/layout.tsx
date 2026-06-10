@@ -1,17 +1,18 @@
 import { Link, useLocation } from "wouter";
 import { useLogout, useGetMe } from "@workspace/api-client-react";
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  CheckSquare, 
-  BrainCircuit, 
-  UserCircle, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  CheckSquare,
+  BrainCircuit,
+  UserCircle,
   LogOut,
   Menu,
   Bot,
   Image as ImageIcon,
   Pill,
-  AlertOctagon
+  AlertOctagon,
+  Sun,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -19,6 +20,7 @@ import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/briefing", label: "Daily Briefing", icon: Sun },
   { href: "/ai", label: "AI Companion", icon: Bot },
   { href: "/notes", label: "Notes", icon: BookOpen },
   { href: "/tasks", label: "Tasks", icon: CheckSquare },
@@ -40,7 +42,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       onSuccess: () => {
         localStorage.removeItem("memora_token");
         setLocation("/login");
-      }
+      },
     });
   };
 
@@ -54,21 +56,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
           Memora<span className="text-primary">AI</span>
         </span>
       </div>
-      
-      <nav className="flex-1 px-4 space-y-1 mt-4">
+
+      <nav className="flex-1 px-4 space-y-1 mt-4 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = location.startsWith(item.href);
           return (
             <Link key={item.href} href={item.href}>
-              <div 
+              <div
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-md cursor-pointer transition-colors ${
-                  isActive 
-                    ? "bg-primary/10 text-primary font-medium ring-1 ring-primary/20" 
+                  isActive
+                    ? "bg-primary/10 text-primary font-medium ring-1 ring-primary/20"
                     : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 }`}
                 onClick={() => setIsMobileOpen(false)}
               >
-                <item.icon className={`h-5 w-5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                <item.icon className={`h-5 w-5 shrink-0 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
                 {item.label}
               </div>
             </Link>
@@ -78,10 +80,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       <div className="p-4 border-t border-border mt-auto">
         <div className="flex items-center justify-between px-3 py-2 mb-2 bg-secondary/30 rounded-md">
-          <span className="text-sm font-medium font-mono text-muted-foreground truncate">{user?.name || user?.email}</span>
+          <span className="text-sm font-medium font-mono text-muted-foreground truncate">
+            {user?.name || user?.email}
+          </span>
         </div>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/10"
           onClick={handleLogout}
         >

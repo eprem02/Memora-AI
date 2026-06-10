@@ -10,6 +10,7 @@ import photosRouter from "./photos";
 import medicationsRouter from "./medications";
 import sosRouter from "./sos";
 import aiRouter from "./ai";
+import briefingRouter from "./briefing";
 import storageRouter from "./storage";
 
 const router: IRouter = Router();
@@ -25,6 +26,7 @@ router.use(photosRouter);
 router.use(medicationsRouter);
 router.use(sosRouter);
 router.use(aiRouter);
+router.use(briefingRouter);
 router.use(storageRouter);
 
 export default router;

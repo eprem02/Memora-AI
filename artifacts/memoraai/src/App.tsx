@@ -15,6 +15,7 @@ import Notes from "@/pages/notes";
 import Tasks from "@/pages/tasks";
 import Memories from "@/pages/memories";
 import Profile from "@/pages/profile";
+import DailyBriefing from "@/pages/briefing";
 import AiCompanion from "@/pages/ai";
 import Photos from "@/pages/photos";
 import Medications from "@/pages/medications";
@@ -34,6 +35,7 @@ function ProtectedRoutes() {
       <Layout>
         <Switch>
           <Route path="/dashboard" component={Dashboard} />
+          <Route path="/briefing" component={DailyBriefing} />
           <Route path="/notes" component={Notes} />
           <Route path="/tasks" component={Tasks} />
           <Route path="/memories" component={Memories} />
