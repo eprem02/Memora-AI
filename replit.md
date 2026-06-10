@@ -47,6 +47,10 @@ A personal AI-powered second-brain app for capturing notes, managing tasks, stor
 ## Product
 
 - Login / Register with JWT auth
+- Task Alarms — datetime-local field on tasks; browser alarm fires (Web Audio + Notifications) when a task comes due; overdue badge shown in task list
+- AI Persistent Memory — `ai_memories` table; Gemini extracts facts after each reply; memories injected into system prompt; Memory Bank panel in AI companion to view/delete facts
+
+## Original features
 - Dashboard with live counts and recent items
 - Notes — full CRUD with search and pin
 - Tasks — full CRUD with priority, due dates, status filter

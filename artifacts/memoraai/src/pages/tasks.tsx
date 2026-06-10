@@ -7,7 +7,7 @@ import {
   useDeleteTask,
   getListTasksQueryKey 
 } from "@workspace/api-client-react";
-import { Plus, Trash2, Edit2, CheckCircle2, Circle } from "lucide-react";
+import { Plus, Trash2, Edit2, CheckCircle2, Circle, Bell, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,11 +39,13 @@ import * as z from "zod";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { format, isPast, parseISO } from "date-fns";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   priority: z.enum(["low", "medium", "high"]).default("medium"),
+  dueDate: z.string().optional(),
 });
 
 export default function Tasks() {
@@ -60,13 +62,19 @@ export default function Tasks() {
 
   const form = useForm<z.infer<typeof taskSchema>>({
     resolver: zodResolver(taskSchema),
-    defaultValues: { title: "", description: "", priority: "medium" },
+    defaultValues: { title: "", description: "", priority: "medium", dueDate: "" },
   });
 
   const onSubmit = (values: z.infer<typeof taskSchema>) => {
+    const payload = {
+      title: values.title,
+      description: values.description,
+      priority: values.priority,
+      dueDate: values.dueDate || null,
+    };
     if (editingId) {
       updateTask.mutate(
-        { id: editingId, data: values },
+        { id: editingId, data: payload },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() });
@@ -79,7 +87,7 @@ export default function Tasks() {
       );
     } else {
       createTask.mutate(
-        { data: values },
+        { data: payload },
         {
           onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: getListTasksQueryKey() });
@@ -98,6 +106,7 @@ export default function Tasks() {
       title: task.title,
       description: task.description || "",
       priority: task.priority,
+      dueDate: task.dueDate || "",
     });
     setIsCreateOpen(true);
   };
@@ -131,6 +140,24 @@ export default function Tasks() {
     low: "border-blue-500 text-blue-500 bg-blue-500/10",
   };
 
+  const formatDue = (dueDate: string | null | undefined) => {
+    if (!dueDate) return null;
+    try {
+      return format(parseISO(dueDate), "MMM d, h:mm a");
+    } catch {
+      return null;
+    }
+  };
+
+  const isOverdue = (task: any) => {
+    if (!task.dueDate || task.completed) return false;
+    try {
+      return isPast(parseISO(task.dueDate));
+    } catch {
+      return false;
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -160,7 +187,7 @@ export default function Tasks() {
             setIsCreateOpen(open);
             if (!open) {
               setEditingId(null);
-              form.reset({ title: "", description: "", priority: "medium" });
+              form.reset({ title: "", description: "", priority: "medium", dueDate: "" });
             }
           }}>
             <DialogTrigger asChild>
@@ -200,28 +227,49 @@ export default function Tasks() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="priority"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Priority</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="priority"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground">Priority</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                              <SelectTrigger className="bg-background/50">
+                                <SelectValue placeholder="Select priority" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="dueDate"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="font-mono text-xs uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+                            <Bell className="h-3 w-3" /> Alarm (Optional)
+                          </FormLabel>
                           <FormControl>
-                            <SelectTrigger className="bg-background/50">
-                              <SelectValue placeholder="Select priority" />
-                            </SelectTrigger>
+                            <Input
+                              type="datetime-local"
+                              className="bg-background/50 text-sm"
+                              {...field}
+                            />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="low">Low</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="high">High</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <Button type="button" variant="outline" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
                     <Button type="submit" disabled={createTask.isPending || updateTask.isPending}>
@@ -249,52 +297,69 @@ export default function Tasks() {
         </div>
       ) : (
         <div className="space-y-3">
-          {tasks?.map((task) => (
-            <div 
-              key={task.id} 
-              className={`group flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${
-                task.completed 
-                  ? 'border-border/30 bg-card/30 opacity-70' 
-                  : 'border-border/50 bg-card hover:border-primary/30 hover:shadow-[0_0_15px_rgba(var(--primary),0.05)] hover:-translate-x-1'
-              }`}
-            >
-              <button 
-                onClick={() => toggleStatus(task)}
-                className="flex-shrink-0 text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+          {tasks?.map((task) => {
+            const overdue = isOverdue(task);
+            const dueLabel = formatDue(task.dueDate);
+            return (
+              <div 
+                key={task.id} 
+                className={`group flex items-center gap-4 p-4 rounded-xl border transition-all duration-300 ${
+                  task.completed 
+                    ? 'border-border/30 bg-card/30 opacity-70' 
+                    : overdue
+                    ? 'border-destructive/50 bg-destructive/5 hover:border-destructive/70'
+                    : 'border-border/50 bg-card hover:border-primary/30 hover:shadow-[0_0_15px_rgba(var(--primary),0.05)] hover:-translate-x-1'
+                }`}
               >
-                {task.completed ? (
-                  <CheckCircle2 className="h-6 w-6 text-primary" />
-                ) : (
-                  <Circle className="h-6 w-6" />
-                )}
-              </button>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-3">
-                  <h3 className={`font-semibold text-base truncate transition-colors ${task.completed ? 'line-through text-muted-foreground' : 'group-hover:text-primary'}`}>
-                    {task.title}
-                  </h3>
-                  <Badge variant="outline" className={`font-mono text-[10px] uppercase ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
-                    {task.priority}
-                  </Badge>
+                <button 
+                  onClick={() => toggleStatus(task)}
+                  className="flex-shrink-0 text-muted-foreground hover:text-primary transition-colors focus:outline-none"
+                >
+                  {task.completed ? (
+                    <CheckCircle2 className="h-6 w-6 text-primary" />
+                  ) : (
+                    <Circle className="h-6 w-6" />
+                  )}
+                </button>
+                
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h3 className={`font-semibold text-base truncate transition-colors ${task.completed ? 'line-through text-muted-foreground' : overdue ? 'text-destructive' : 'group-hover:text-primary'}`}>
+                      {task.title}
+                    </h3>
+                    <Badge variant="outline" className={`font-mono text-[10px] uppercase ${priorityColors[task.priority as keyof typeof priorityColors]}`}>
+                      {task.priority}
+                    </Badge>
+                    {overdue && (
+                      <Badge variant="outline" className="font-mono text-[10px] uppercase border-destructive text-destructive bg-destructive/10 animate-pulse">
+                        overdue
+                      </Badge>
+                    )}
+                  </div>
+                  {task.description && (
+                    <p className={`text-sm mt-1 truncate ${task.completed ? 'text-muted-foreground/50' : 'text-muted-foreground'}`}>
+                      {task.description}
+                    </p>
+                  )}
+                  {dueLabel && (
+                    <div className={`flex items-center gap-1 mt-1 text-xs font-mono ${overdue && !task.completed ? 'text-destructive' : 'text-muted-foreground'}`}>
+                      <Clock className="h-3 w-3" />
+                      {dueLabel}
+                    </div>
+                  )}
                 </div>
-                {task.description && (
-                  <p className={`text-sm mt-1 truncate ${task.completed ? 'text-muted-foreground/50' : 'text-muted-foreground'}`}>
-                    {task.description}
-                  </p>
-                )}
-              </div>
 
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 flex-shrink-0">
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => handleEdit(task)}>
-                  <Edit2 className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(task.id)}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 flex-shrink-0">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => handleEdit(task)}>
+                    <Edit2 className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10" onClick={() => handleDelete(task.id)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

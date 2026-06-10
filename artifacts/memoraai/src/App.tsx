@@ -7,6 +7,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { Layout } from "@/components/layout";
 
 // Pages
+import { useTaskAlarm } from "@/hooks/use-task-alarm";
 import Login from "@/pages/login";
 import Register from "@/pages/register";
 import Dashboard from "@/pages/dashboard";
@@ -21,9 +22,15 @@ import SOS from "@/pages/sos";
 
 const queryClient = new QueryClient();
 
+function AlarmWatcher() {
+  useTaskAlarm();
+  return null;
+}
+
 function ProtectedRoutes() {
   return (
     <AuthGuard>
+      <AlarmWatcher />
       <Layout>
         <Switch>
           <Route path="/dashboard" component={Dashboard} />

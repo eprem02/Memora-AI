@@ -7,3 +7,4 @@ export * from "./medications";
 export * from "./sos_contacts";
 export * from "./conversations";
 export * from "./messages";
+export * from "./ai_memories";
